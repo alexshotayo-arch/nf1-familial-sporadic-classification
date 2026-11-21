@@ -1,4 +1,4 @@
-# Python and Jupyter
+# Python and Jupyter artifacts
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
@@ -6,9 +6,7 @@ __pycache__/
 venv/
 .env
 
-# Dataset: obtain separately from UCI
-*.xlsx
-*.xls
+# Exported or temporary extra datasets (the original source .xlsx is tracked)
 *.csv
 *.zip
 
