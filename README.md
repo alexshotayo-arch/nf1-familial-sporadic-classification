@@ -1,39 +1,40 @@
 # Predicting Familial vs. Sporadic NF1 Cases
 
-**Machine learning course project | Linear Regression vs. Linear SVM | NJIT DS675**
+**NJIT DS675 Machine Learning project** | Python, scikit-learn, Linear Regression, Linear SVM
 
-This project investigates whether clinical symptoms and age-related features can help distinguish **familial** from **sporadic** cases of neurofibromatosis type 1 (NF1).
+This project tests whether clinical symptom and age variables can help distinguish **familial** from **sporadic** neurofibromatosis type 1 (NF1) cases. It evaluates **Linear Regression** and **Linear Support Vector Machine** with stratified cross-validation and balanced accuracy.
 
-It compares two linear modeling approaches using preprocessing and cross-validation. The aim is to study predictive performance, **not** to build a clinical diagnostic tool.
+**Research and educational use only. The models are not suitable for medical diagnosis.**
 
 ## Research question
 
-Can simple linear models distinguish familial from sporadic NF1 cases using recorded clinical features? Does removing age variables change the results?
+Can simple linear models classify familial versus sporadic NF1 using clinical features? Does removing three age-related variables improve performance?
 
-## Dataset
+## Dataset and provenance
 
-- Source: [UCI Machine Learning Repository, Dataset 1162](https://archive.ics.uci.edu/dataset/1162/neurofibromatosis+type+1+clinical+symptoms+of+familial+and+sporadic+cases)
-- File used in the original notebook: `dataset-uci.xlsx`
-- Working table in archived notebook: **296 records**, 161 sporadic and 135 familial
-- **18 predictors** and a `Case Type` target (0 = sporadic, 1 = familial)
-- Two feature sets: 18 predictors with ages, and 15 after removing three age features
+This repository includes **the exact `dataset-uci.xlsx` spreadsheet used in the original experiment**, at [`data/dataset-uci.xlsx`](data/dataset-uci.xlsx). It was obtained from the [UCI Machine Learning Repository, dataset 1162](https://archive.ics.uci.edu/dataset/1162/neurofibromatosis+type+1+clinical+symptoms+of+familial+and+sporadic+cases) and is redistributed with attribution under **CC BY 4.0**.
 
-**Data version note:** The UCI listing describes **331 instances**, while the working table in the original saved experiment contained **296 records**. This difference has not been reconciled. Reproduction with a different dataset version may produce different results.
+- 296 records (161 sporadic and 135 familial)
+- 18 predictors and the `Case Type` target (0 = sporadic, 1 = familial)
+- 3 age features and 15 other clinical features
+- Original spreadsheet SHA256: `36408ef8d81f56bcc204966ff8110ff4bea28b1e3ae41d8bfe92877228716005`
 
-The dataset is attributed to Sharafi and colleagues (2025). See [data/README.md](data/README.md) for the dataset source and setup.
+**Why UCI says 331:** The UCI webpage advertises 331 instances, but this downloaded Excel workbook contains 296 rows, and the original Colab analysis used these 296. The reason for the catalog discrepancy is unknown. The repository preserves the exact input spreadsheet so the experiment can be reproduced without guessing what happened to the other 35 records. See [data documentation](data/README.md).
 
 ## Method
 
-- Missing age values: median imputation within each training fold
-- Numerical preprocessing: `StandardScaler` within each fold
-- Models: `LinearRegression` with predictions converted to binary labels using a 0.5 threshold; `LinearSVC` with `C` of 100, 10, 1, 0.1, and 0.01
-- Evaluation: stratified 5-fold cross-validation (`shuffle=True`, `random_state=42`)
-- Metric: mean balanced accuracy across the five held-out folds
-- Comparison: with and without age variables
+1. Load the source Excel file and separate predictors (`X`) from labels (`y`).
+2. Fit median imputation and standard scaling within each training fold.
+3. Evaluate `LinearRegression()`, using a 0.5 threshold to obtain class predictions.
+4. Evaluate `LinearSVC()` with `C` = 100, 10, 1, 0.1 and 0.01.
+5. Use stratified five-fold cross-validation with `shuffle=True` and `random_state=42`.
+6. Report mean balanced accuracy. Repeat with 15 predictors after excluding the three age variables.
 
-## Results from the saved notebook run
+The workflow was written and evaluated in Google Colab, then adapted to run locally without Drive mounting or ZIP extraction.
 
-| Model | C | With ages: balanced accuracy | Without ages: balanced accuracy |
+## Experimental results
+
+| Model | C | With ages | Without ages |
 |---|---:|---:|---:|
 | Linear Regression | N/A | 51.82% | 52.95% |
 | Linear SVM | 100 | 51.82% | 52.95% |
@@ -42,38 +43,46 @@ The dataset is attributed to Sharafi and colleagues (2025). See [data/README.md]
 | Linear SVM | 0.1 | 51.82% | 52.95% |
 | Linear SVM | 0.01 | 50.41% | **53.56%** |
 
-The best observed mean balanced accuracy was **53.56%**, from Linear SVM (`C=0.01`) without age features. All results were close to 50%, indicating limited predictive separation using these models and features.
+The highest mean balanced accuracy observed was **53.56%**, achieved by Linear SVM with `C=0.01` after excluding the age variables.
 
-![Comparison of mean balanced accuracy with and without age features](figures/age_feature_comparison.svg)
+![Comparison of mean balanced accuracy with and without age variables](figures/age_feature_comparison.svg)
 
-## Repository contents
+**Interpretation:** Model performance remained close to the 50% chance-level benchmark for this binary balanced-accuracy metric. Age removal produced a small improvement, but this does not prove that age is medically irrelevant. Additional experiments would be needed to identify the precise causes of the weak performance.
 
-- [`notebooks/nf1_analysis.ipynb`](notebooks/nf1_analysis.ipynb): analysis adapted from the actual Google Colab experiment
-- [`figures/age_feature_comparison.svg`](figures/age_feature_comparison.svg): results summary chart
-- [`data/README.md`](data/README.md): dataset source, attribution, and setup
-- [`requirements.txt`](requirements.txt): Python dependencies
+## Reproduce the experiment
 
-## How to run
+The complete notebook **was rerun successfully** on the original Excel spreadsheet on November 21, 2026. Its reported balanced accuracy values matched the original Colab experiment.
 
-1. Download `dataset-uci.xlsx` from the [UCI dataset page](https://archive.ics.uci.edu/dataset/1162/neurofibromatosis+type+1+clinical+symptoms+of+familial+and+sporadic+cases).
-2. Place it at `data/dataset-uci.xlsx` inside the repository.
-3. Install dependencies with `pip install -r requirements.txt`.
-4. Open `notebooks/nf1_analysis.ipynb` in Jupyter or Google Colab and run the cells from top to bottom.
-5. Check the loaded row count and label distribution. If they differ from the original working table, expect results to differ.
+**Tested environment:** Python 3.13.5 with the Python package versions pinned in [requirements.txt](requirements.txt).
 
-The notebook has been adapted to remove Google Drive mounting and ZIP extraction setup. **It has not been fully reexecuted against a local copy of the original Excel dataset**, so full reproducibility remains unverified.
+1. Clone this repository, or download its ZIP using GitHub's **Code → Download ZIP** menu.
+2. Open a terminal inside the downloaded repository folder.
+3. Run `pip install -r requirements.txt`.
+4. Run `jupyter lab`. Open [`notebooks/nf1_analysis.ipynb`](notebooks/nf1_analysis.ipynb).
+5. Select **Restart Kernel and Run All Cells**. The notebook reads the included file from `data/dataset-uci.xlsx`.
+6. The final cell validates the source file's SHA256 and three benchmark balanced accuracy scores. A successful run prints **"Reproduction check passed"**.
 
-## Limitations
+Generated charts are saved under `figures/`.
 
-- Modest working sample size and overlapping clinical symptoms
-- Balanced accuracy near chance level; **not for clinical use**
-- Only linear models were compared in this project
-- No independent final untouched test set; configurations were compared using the cross-validation results
-- Removing age variables slightly improved scores, but this does **not** establish that age is clinically irrelevant
-- Data version discrepancy requires investigation
+## Files
 
-## Attribution
+- [`notebooks/nf1_analysis.ipynb`](notebooks/nf1_analysis.ipynb): adapted original experiment, all core code, and reproducibility checks
+- [`data/dataset-uci.xlsx`](data/dataset-uci.xlsx): exact source workbook used for the results
+- [`data/README.md`](data/README.md): provenance and CC BY 4.0 attribution
+- [`figures/age_feature_comparison.svg`](figures/age_feature_comparison.svg): summary visualization
+- [`requirements.txt`](requirements.txt): tested Python dependencies
+- [`.gitignore`](.gitignore): temporary file exclusions
 
-**Dataset and associated research:** Sharafi, P., Arslan, H., Ersoy, S., Varan, A., and Ayter, Ş. (2025). *Neurofibromatosis Type 1: Clinical Symptoms of Familial and Sporadic Cases*. UCI Machine Learning Repository. See [dataset listing](https://archive.ics.uci.edu/dataset/1162/neurofibromatosis+type+1+clinical+symptoms+of+familial+and+sporadic+cases) and [associated paper DOI](https://doi.org/10.5505/TurkHijyen.2025.06337).
+## Limitations and responsible use
 
-This repository is an educational experiment, not medical advice.
+- Small clinical dataset with possible substantial class overlap
+- Only linear classifiers / linear prediction baselines were evaluated
+- The analysis used the same cross-validation results to compare parameter and feature choices; it did **not** reserve a final untouched test set
+- Outcomes are not suitable for clinical decisions or diagnosis
+- The discrepancy between the UCI website's instance count and the actual spreadsheet is documented, not explained
+
+## Source and credit
+
+Dataset: Sharafi, P., Arslan, H., Ersoy, S., Varan, A., and Ayter, Ş. (2025). *Neurofibromatosis Type 1; Clinical Symptoms of Familial and Sporadic Cases*. UCI Machine Learning Repository. [UCI dataset page](https://archive.ics.uci.edu/dataset/1162/neurofibromatosis+type+1+clinical+symptoms+of+familial+and+sporadic+cases). [Associated research DOI](https://doi.org/10.5505/TurkHijyen.2025.06337).
+
+Dataset license: [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
